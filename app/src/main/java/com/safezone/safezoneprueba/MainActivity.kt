@@ -43,6 +43,15 @@ class MainActivity : AppCompatActivity() {
                             backgroundLocation.launch(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                         }
                     }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(
+                                this,
+                                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                                1001 // Código de solicitud
+                            )
+                        }
+                    }
 
                 }
                 it.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
@@ -79,7 +88,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun checkPermissions() {
+    private fun checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (ActivityCompat.checkSelfPermission(
                     this,

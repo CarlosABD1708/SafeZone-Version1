@@ -13,11 +13,11 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
-import com.google.firebase.Firebase
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import org.greenrobot.eventbus.EventBus
 
+@Suppress("DEPRECATION")
 class LocationService : Service() {
 
 
@@ -32,8 +32,8 @@ class LocationService : Service() {
     private var notificationManager: NotificationManager? = null
 
     private var location:Location?=null
-    val database: FirebaseDatabase = FirebaseDatabase.getInstance()
-    val ubicacionesReference: DatabaseReference = database.getReference("ubicaciones")
+    private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private val ubicacionesReference: DatabaseReference = database.getReference("ubicaciones")
     override fun onCreate() {
         super.onCreate()
 
@@ -42,9 +42,6 @@ class LocationService : Service() {
             LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 15000).setIntervalMillis(15000)
                 .build()
         locationCallback = object : LocationCallback() {
-            override fun onLocationAvailability(p0: LocationAvailability) {
-                super.onLocationAvailability(p0)
-            }
 
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
@@ -58,11 +55,12 @@ class LocationService : Service() {
             notificationManager?.createNotificationChannel(notificationChannel)
         }
 
-        startForeground(NOTIFICATION_ID,getNotification())
+        startForeground(NOTIFICATION_ID, getNotification())
+
     }
 
     @Suppress("MissingPermission")
-    fun createLocationRequest(){
+    private fun createLocationRequest(){
         try {
             fusedLocationProviderClient?.requestLocationUpdates(
                 locationRequest!!,locationCallback!!,null
@@ -88,7 +86,7 @@ class LocationService : Service() {
             longitude = location?.longitude
         ))
         sharedPreferences = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
-        var uid = sharedPreferences.getString("uid","")
+        val uid = sharedPreferences.getString("uid","")
 
         val ubicacionReference: DatabaseReference = ubicacionesReference.child(uid.toString())
 
@@ -103,20 +101,19 @@ class LocationService : Service() {
         Log.d("Localizacion", "Latitud ${location?.latitude} ,Longitud: ${location?.longitude} ")
     }
 
-    fun getNotification():Notification{
+    private fun getNotification(): Notification {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("SafeZone")
-            .setContentText(
-                "Tracking Iniciado"
-            )
+            .setContentText("Estamos rastreando tu ubicación en segundo plano.")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOngoing(true)
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notification.setChannelId(CHANNEL_ID)
         }
         return notification.build()
     }
+
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
